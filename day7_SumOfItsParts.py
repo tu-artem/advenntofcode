@@ -37,7 +37,6 @@ class Edge(NamedTuple):
         return Edge(*rgx_found)
 
 
-edges = [Edge.from_str(x.strip()) for x in TEST_CASE.split("\n") if x]
 
 def build_graph(edges: List[Edge], reverse=False) -> Dict[str, List[str]]:
     graph: Dict[str, List[str]] = {}
@@ -63,90 +62,167 @@ def find_start_end(edges: List[Edge]) -> Tuple[List[str], List[str]]:
 
     return set(start), set(end)
 
-graph = build_graph(edges)
-
-rev_graph =build_graph(edges, True)
-start, end = find_start_end(edges)
 
 
 def find_path(graph, rev_graph, start, end):
     candidates = list(start)
     
     def check_all(l1, l2):
+        if not l1: return True
         return all([(x in l2) for x in l1])
-    
     executed = []
+    
+
     while True:
-        
+        candidates = [candidate for candidate in candidates if check_all(rev_graph.get(candidate), executed)]
+        # for candidate in candidates:    
+        #     parents = rev_graph.get(candidate)
+        #     if parents:
+        #         all_parents = check_all(parents, executed)  
+        #         if not all_parents:
+        #             candidates.remove(candidate)
+
+
         to_execute = min(candidates)
         
-        parents = rev_graph.get(to_execute)
         executed.append(to_execute)
-        if parents:
-            all_parents = check_all(parents, executed)  
-            if not all_parents:
-                candidates.remove(to_execute)
-                executed.remove(to_execute)
-                continue
         
         children = graph.get(to_execute)
         if children:
             new_candidates = [x for x in children if x not in executed]
            
             candidates.extend(new_candidates)
-            candidates = [x for x in candidates if x not in executed]
+            candidates = [candidate for candidate in candidates if candidate != to_execute]
           
         reach_end = check_all(end, executed)
         if reach_end:
             return "".join(executed)
-        
 
 
-def find_all_paths(graph, start, end, path=[]):
-        path = path + [start]
-        if start == end:
-            return [path]
-        if start not in graph:
-            return []
-        paths = []
-        for node in graph[start]:
-            if node not in path:
-                newpaths = find_all_paths(graph, node, end, path)
-                for newpath in newpaths:
-                    paths.append(newpath)
-        return paths
 
-
-weights = {l:(ix+1) for ix, l in enumerate(ascii_uppercase)}
-
-def weight_path(path, weights=weights):
-    total_weight = sum([weights.get(vertex) for vertex in path])
-    return total_weight
-
-find_path(graph,rev_graph, start, end)
-
-paths = find_all_paths(graph, list(start)[0], list(end)[0])
-
-w = [weight_path(path) for path in paths]
-
-
-with open("day7_input.txt") as f:
-    lines = [line.strip() for line in f]
-
-edges = [Edge.from_str(x.strip()) for x in lines]
-
+edges = [Edge.from_str(x.strip()) for x in TEST_CASE.split("\n") if x]
 graph = build_graph(edges)
-
 rev_graph =build_graph(edges, True)
 start, end = find_start_end(edges)
+find_path(graph,rev_graph, start, end)
 
-print(find_path(graph,rev_graph, start, end))
+
+# with open("day7_input.txt") as f:
+#     lines = [line.strip() for line in f]
+
+# edges = [Edge.from_str(x.strip()) for x in lines]
+
+# graph = build_graph(edges)
+
+# rev_graph =build_graph(edges, True)
+# start, end = find_start_end(edges)
+
+# print(find_path(graph,rev_graph, start, end))
 
 
-paths = []
-for s in list(start):
-    for e in list(end):
-        p = find_all_paths(graph, s, e)
-        paths.extend(p)
+class Worker:
+    def __init__(self, id):
+        self.id = id
+        self.job = None
+        self.elapsed_time = -2
+        self.weight = 0
+        self.busy = False
 
-w = [weight_path(path) for path in paths]
+    def take_job(self, job):
+        self.job = job
+        self.elapsed_time = 0
+        self.weight = weights[job]
+        self.busy = True
+
+    def finish_job(self):
+        self.busy = False
+        self.elapsed_time = -2
+        job = self.job
+        self.job = None
+        return job
+    
+    def finished(self):
+        return self.elapsed_time >= self.weight
+
+
+
+
+class Factory:
+    def __init__(self, graph, rev_graph, start, end):
+        self.graph = graph
+        self.rev_graph = rev_graph
+        # self.start = start
+        self.end = end
+        self.executed = []
+        self.candidates = list(start)
+        self.locked_jobs = []
+    
+    def finish_job(self, job: str):
+        self.executed.append(job)
+
+        children = graph.get(job)
+        if children:
+            new_candidates = [x for x in children if x not in self.executed]
+            
+            self.candidates.extend(new_candidates)
+        self.candidates = [candidate for candidate in self.candidates 
+                                     if candidate != job and 
+                                     self.check_all(rev_graph.get(candidate), self.executed)]
+
+    def check_all(self, l1, l2):
+        if not l1: return True
+        return all([(x in l2) for x in l1])
+
+    def lock_job(self, job):
+        self.locked_jobs.append(job)
+
+    def avaliable_jobs(self):
+        return [candidate for candidate in self.candidates if candidate not in self.locked_jobs]
+
+
+# with open("day7_input.txt") as f:
+#     lines = [line.strip() for line in f]
+
+# edges = [Edge.from_str(x.strip()) for x in lines]
+
+# graph = build_graph(edges)
+
+# rev_graph =build_graph(edges, True)
+# start, end = find_start_end(edges)
+
+
+factory = Factory(graph,rev_graph, start, end)
+
+workers = [Worker(x) for x in range(2)]
+weights = {l:(ix+1) for ix, l in enumerate(ascii_uppercase)}
+curr_time = 0 
+while factory.candidates:
+    print(factory.candidates)
+    #print(factory.candidates)
+    for worker in workers:
+
+        av_job = factory.avaliable_jobs()
+        if worker.busy:
+            worker.elapsed_time += 1
+        if worker.finished():
+            finished = worker.finish_job()
+            factory.finish_job(finished)
+            av_job = factory.avaliable_jobs()
+        if not av_job:
+            continue
+        
+        if not worker.busy:
+            worker.take_job(min(av_job))
+            factory.lock_job(min(av_job))
+        
+        
+    print(curr_time, [(worker.id, worker.job) for worker in workers])
+        #print(worker.id, worker.job)
+    
+    curr_time += 1
+    #if curr_time > 20:
+    #    break
+print(curr_time)
+# while curr_time < 10:
+#     can_execute = start
+
