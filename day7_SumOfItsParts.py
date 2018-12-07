@@ -5,6 +5,7 @@ https://adventofcode.com/2018/day/7
 
 import re
 from typing import NamedTuple, List, Tuple, Dict
+from string import ascii_uppercase
 
 r"""
   -->A--->B--
@@ -101,12 +102,32 @@ def find_path(graph, rev_graph, start, end):
         
 
 
-    
-    
+def find_all_paths(graph, start, end, path=[]):
+        path = path + [start]
+        if start == end:
+            return [path]
+        if start not in graph:
+            return []
+        paths = []
+        for node in graph[start]:
+            if node not in path:
+                newpaths = find_all_paths(graph, node, end, path)
+                for newpath in newpaths:
+                    paths.append(newpath)
+        return paths
 
+
+weights = {l:(ix+1) for ix, l in enumerate(ascii_uppercase)}
+
+def weight_path(path, weights=weights):
+    total_weight = sum([weights.get(vertex) for vertex in path])
+    return total_weight
 
 find_path(graph,rev_graph, start, end)
 
+paths = find_all_paths(graph, list(start)[0], list(end)[0])
+
+w = [weight_path(path) for path in paths]
 
 
 with open("day7_input.txt") as f:
@@ -120,3 +141,12 @@ rev_graph =build_graph(edges, True)
 start, end = find_start_end(edges)
 
 print(find_path(graph,rev_graph, start, end))
+
+
+paths = []
+for s in list(start):
+    for e in list(end):
+        p = find_all_paths(graph, s, e)
+        paths.extend(p)
+
+w = [weight_path(path) for path in paths]
