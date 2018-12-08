@@ -124,7 +124,7 @@ class Worker:
     def __init__(self, id):
         self.id = id
         self.job = None
-        self.elapsed_time = -2
+        self.elapsed_time = 0
         self.weight = 0
         self.busy = False
 
@@ -136,7 +136,7 @@ class Worker:
 
     def finish_job(self):
         self.busy = False
-        self.elapsed_time = -2
+        self.elapsed_time = 0
         job = self.job
         self.job = None
         return job
@@ -180,24 +180,24 @@ class Factory:
         return [candidate for candidate in self.candidates if candidate not in self.locked_jobs]
 
 
-# with open("day7_input.txt") as f:
-#     lines = [line.strip() for line in f]
+with open("day7_input.txt") as f:
+    lines = [line.strip() for line in f]
 
-# edges = [Edge.from_str(x.strip()) for x in lines]
+edges = [Edge.from_str(x.strip()) for x in lines]
 
-# graph = build_graph(edges)
+graph = build_graph(edges)
 
-# rev_graph =build_graph(edges, True)
-# start, end = find_start_end(edges)
+rev_graph =build_graph(edges, True)
+start, end = find_start_end(edges)
 
 
 factory = Factory(graph,rev_graph, start, end)
 
-workers = [Worker(x) for x in range(2)]
-weights = {l:(ix+1) for ix, l in enumerate(ascii_uppercase)}
+workers = [Worker(x) for x in range(5)]
+weights = {l:(ix+61) for ix, l in enumerate(ascii_uppercase)}
 curr_time = 0 
 while factory.candidates:
-    print(factory.candidates)
+
     #print(factory.candidates)
     for worker in workers:
 
@@ -216,11 +216,11 @@ while factory.candidates:
             factory.lock_job(min(av_job))
         
         
-    print(curr_time, [(worker.id, worker.job) for worker in workers])
         #print(worker.id, worker.job)
-    
-    curr_time += 1
+    if factory.candidates:
+        curr_time += 1
     #if curr_time > 20:
+    print(curr_time, [(worker.id, worker.job) for worker in workers])
     #    break
 print(curr_time)
 # while curr_time < 10:
