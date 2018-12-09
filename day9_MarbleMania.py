@@ -11,33 +11,20 @@ n_marbles = 25
 
 def play_marbles(n_players: int, n_marbles: int) -> int:
     marbles = deque([0])
-    i = 0
     players = cycle(range(1, n_players+1))
     scores = Counter()
     for marble in range(1, n_marbles+1):
         curr_player = next(players)
-        i += 1
-        if i % (n_marbles / 100) == 0:
-            print(i * 100 / n_marbles)
         if marble % 23 == 0:
-            scores[curr_player] += marble
-            del_index = (len(marbles) + curr_index - 7) % len(marbles)
-            scores[curr_player] += marbles[del_index]
-            
-            marbles.rotate(-del_index)
-            marbles.popleft()
-           # marbles.remove(marbles[del_index])
-            curr_index = 0
-            continue
-        if marble == 1:
-            curr_index = 1
-        else:
-            curr_index = (curr_index + 2) % len(marbles)
+            scores[curr_player] += marble 
 
-        marbles.rotate(-curr_index)
-        marbles.appendleft(marble)
-        curr_index=0
-        #marbles.insert(curr_index, marble)
+            marbles.rotate(7)
+            scores[curr_player] += marbles.popleft()
+           # marbles.remove(marbles[del_index])
+        
+        else:       
+            marbles.rotate(-2)
+            marbles.appendleft(marble)
     return scores.most_common(1)[0][1]
 
 
@@ -60,4 +47,5 @@ assert play_marbles(30, 5807) == 37305
 
 "405 players; last marble is worth 70953 points"
 
-play_marbles(405,70953)
+print(play_marbles(405,70953))
+print(play_marbles(405,70953*100))
