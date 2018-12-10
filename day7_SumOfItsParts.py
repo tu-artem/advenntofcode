@@ -31,8 +31,8 @@ class Edge(NamedTuple):
     fr: str = None
     to: str = None
     
-    @classmethod
-    def from_str(self, raw: str) -> 'Edge':
+    @staticmethod
+    def from_str(raw: str) -> 'Edge':
         rgx_found = re.match(rgx, raw).groups()
         return Edge(*rgx_found)
 
