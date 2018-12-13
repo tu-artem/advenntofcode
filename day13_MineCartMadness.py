@@ -46,6 +46,7 @@ class Cart:
         self.x, self.y = position
         self.direction = direction
         self.cross = cycle(["left", "straingh", "right"])
+        self.crashed = False
 
     def __repr__(self):
         return f"(Cart) {self.cart_id} at {self.x, self.y} moving {self.direction}"
@@ -82,7 +83,7 @@ def create_grid_and_carts(lines: List[str]):
 grid, carts = create_grid_and_carts(lines)
 
 def tick(carts: List[Cart], grid: Dict[Tuple[int, int], str]) -> List[Cart]:
-    for cart in carts:
+    for cart in sorted(carts, key=lambda cart: (cart.y, cart.x)):
         
         if cart.direction == "right":
             cart.x += 1
@@ -141,6 +142,66 @@ def tick(carts: List[Cart], grid: Dict[Tuple[int, int], str]) -> List[Cart]:
 
     return carts
 
+def tick_one(cart: Cart, grid: Dict[Tuple[int, int], str]) -> Cart:
+
+        
+    if cart.direction == "right":
+        cart.x += 1
+    elif cart.direction == "left":
+        cart.x += -1
+    elif cart.direction == "up":
+        cart.y += -1
+    elif cart.direction == "down":
+        cart.y += 1
+
+    current_position = (cart.x, cart.y)
+    track = grid.get(current_position)
+    if track == "+":
+        turn = cart.on_cross()
+        if cart.direction == "right":
+            if turn == "left":
+                cart.direction = "up"
+            elif turn == "right":
+                cart.direction = "down"
+        elif cart.direction == "left":
+            if turn == "left":
+                cart.direction = "down"
+            elif turn == "right":
+                cart.direction = "up"
+        elif cart.direction == "up":
+            if turn == "left":
+                cart.direction = "left"
+            elif turn == "right":
+                cart.direction = "right"
+        elif cart.direction == "down":
+            if turn == "left":
+                cart.direction = "right"
+            elif turn == "right":
+                cart.direction = "left"
+    else:
+        if cart.direction == "right":
+            if track == "\\":
+                cart.direction = "down"
+            elif track == "/":
+                cart.direction = "up"
+        elif cart.direction == "left":
+            if track == "\\":
+                cart.direction = "up"
+            elif track == "/":
+                cart.direction = "down"
+        elif cart.direction == "up":
+            if track == "\\":
+                cart.direction = "left"
+            elif track == "/":
+                cart.direction = "right"
+        elif cart.direction == "down":
+            if track == "\\":
+                cart.direction = "right"
+            elif track == "/":
+                cart.direction = "left"
+        
+    return cart
+
 def move(carts, grid):
             
     carts = tick(carts, grid)
@@ -165,15 +226,16 @@ def find_last(carts, grid):
     ticks = 0
     
     while len(carts) > 1:
-        carts = tick(carts, grid)
-        ticks += 1
-        positions = Counter((cart.x, cart.y) for cart in carts)
-        #if positions.most_common(1)[0][1] > 1:
-        accidents = set([pos for (pos, count) in positions.most_common() if count > 1])
-        if accidents:
-            print(accidents)
-        carts = [cart for cart in carts if cart.position() not in accidents]
-      #  print(len(carts))
+        for cart in sorted(carts,key=lambda cart: (cart.y, cart.x)):
+            cart = tick_one(cart, grid)
+
+            positions = Counter((cart.x, cart.y) for cart in carts)
+            #if positions.most_common(1)[0][1] > 1:
+            accidents = set([pos for (pos, count) in positions.most_common() if count > 1])
+            if accidents:
+                print(positions.most_common(3))
+            carts = [cart for cart in carts if cart.position() not in accidents]
+    #  print(len(carts))
    
     return carts
 
