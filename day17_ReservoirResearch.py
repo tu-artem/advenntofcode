@@ -5,7 +5,7 @@ from itertools import product
 from typing import NamedTuple, List, Tuple, Set
 
 from itertools import chain
-
+from collections import deque
 class Clay(NamedTuple):
     x: int
     y: int
@@ -62,7 +62,7 @@ def plot_clay(clays: List[Clay], water: List[Tuple[int, int]]) -> str:
             if (x, y) == SPGING:
                 grid.append("+")
             elif (x, y) in water:
-                grid.append("|")
+                grid.append("~")
             elif (x, y) in coords:
                 grid.append("#")
             else:
@@ -75,8 +75,8 @@ def plot_clay(clays: List[Clay], water: List[Tuple[int, int]]) -> str:
 
 
 
-def clay_below(current: Tuple[int, int], clays: List[Clay], water):
-    in_clays =  (current[0], current[1] + 1) in {clay.coords() for clay in clays}
+def clay_below(current: Tuple[int, int], clay_coords, water):
+    in_clays =  (current[0], current[1] + 1) in set(clay_coords)
     in_water =  (current[0], current[1] + 1) in set(water)
     return in_clays or in_water
 
@@ -87,16 +87,6 @@ def hit_ground(current: Tuple[int, int], clays: List[Clay], water) -> Tuple[int,
         [w[1] for w in water if w[0] == current[0] and w[1] > current[1]])
         )
     return current[0], hit - 1
-
-
-def one_up(current: Tuple[int, int]) -> Tuple[int, int]:
-    x, y = current
-    return x, y - 1
-
-
-def fall_down(current: Tuple[int, int]) -> Tuple[int, int]:
-    x, y = current
-    return x, y + 1
 
 def settle_right(current: Tuple[int, int]) -> Tuple[int, int]:
     x, y = current
@@ -120,51 +110,75 @@ def fill_up(left, right, clays):
 CLAY_COORDS: Set[Tuple[int, int]] =  {clay.coords() for clay in CLAY}
 
 
-def waterfall(current: Tuple[int, int], clays: List[Clay], water=[]):
+def waterfall(current: Tuple[int, int], clay_coords, clays: List[Clay], water=[]):
+    water = water[:]
     print(current)
-    clay_coords = {clay.coords() for clay in clays}
+   
     try:
         hit = hit_ground(current, clays, water)
      #   print("hit: ", hit)
     except ValueError:
         return []
-    to_the_right = settle_right(hit)
-    to_the_left = settle_left(hit)
-    right = None
-    ## Moving right from hit
-    while True:
-        if not clay_below(to_the_right, clays, water):
-         #   print(f"ready to move down from right {to_the_right}")
-            # print([Clay(x,y) for (x,y) in clay_coords.union(all_water)],  clay_coords.union(all_water))
-            right = None
-            water.extend(waterfall(to_the_right, clays, water))
-            break
-        elif to_the_right in clay_coords:
-            right = to_the_right
-            break
-        to_the_right = settle_right(to_the_right)
 
-    left = None
-    ## Moving left from hit
-    while True:
-        if not clay_below(to_the_left, clays, water):
-         #   print("ready to move down from left")
-            left = None
-            water.extend(waterfall(to_the_left, clays,  water))
-            break
-        elif to_the_left in clay_coords:
-            left = to_the_left
-            break
-        to_the_left = settle_left(to_the_left)
+    new_sources = []
 
-    if right and left:
-        water.extend(fill_up(left, right, clays))
-        # print(plot_clay(clays, water))
-        water.extend(waterfall(current, clays,  water))
+    def find_right(position):
+        to_the_right = settle_right(position)
+        ## Moving right from hit
+        while True:
+            if not clay_below(to_the_right, clay_coords, water):
+                # print(f"ready to move down from right {to_the_right}")
+                # print([Clay(x,y) for (x,y) in clay_coords.union(all_water)],  clay_coords.union(all_water))
+                new_sources.append(to_the_right)
+                return None
+            elif to_the_right in clay_coords:
+                return to_the_right
+            to_the_right = settle_right(to_the_right)
+
+    def find_left(position):
+        to_the_left = settle_left(position)
+        ## Moving left from hit
+        while True:
+            if not clay_below(to_the_left, clay_coords, water):
+                # print("ready to move down from left")
+                new_sources.append(to_the_left)
+                return None
+            elif to_the_left in clay_coords:
+                return to_the_left
+            to_the_left = settle_left(to_the_left)
+
     
-    return water
+    
+    right = find_right(hit)
+    left = find_left(hit)
+    
+    while right and left:
+        water.extend(fill_up(left, right, clays))
+        hit = hit[0], hit[1] - 1
+        right = find_right(hit)
+        left = find_left(hit)
+    return water, new_sources
 
-waterfall((500,0), CLAY, [])
+
+# settled_water = []
+
+
+# water, sources = waterfall((500,0),CLAY_COORDS, CLAY, [])
+# settled_water.extend(water)
+
+# sources = deque(sources)
+
+# while True:
+#     curr = sources.popleft()
+#     res = waterfall(curr,CLAY_COORDS, CLAY, settled_water)
+#     if res:
+#         w, s = res
+#         settled_water.extend(w)
+#         sources.append(s)
+#         print(plot_clay(CLAY, settled_water))
+#     else:
+#         break
+
 
 
 
@@ -177,9 +191,22 @@ clay = []
 for line in lines:
     clay.extend(from_line(line))
 
+print(plot_clay(clay, []))
+# settled_water = []
+# clay_coords: Set[Tuple[int, int]] =  {c.coords() for c in clay}
 
+# water, sources = waterfall((500,0), clay_coords, clay, [])
+# settled_water.extend(water)
 
-waters = waterfall((500, 0), clay, [])
+# sources = deque(sources)
 
-# print(plot_clay(clay, []))
-
+# while True:
+#     curr = sources.popleft()
+#     res = waterfall(curr, clay_coords,  clay, settled_water)
+#     if res:
+#         w, s = res
+#         settled_water.extend(w)
+#         sources.extend(s)
+#       #  print(plot_clay(clay, settled_water))
+#     else:
+#         break
