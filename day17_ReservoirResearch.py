@@ -49,7 +49,7 @@ SPGING = (500, 0)
 
 def plot_clay(clays: List[Clay], water: List[Tuple[int, int]]) -> str:
     coords = {clay.coords() for clay in clays}
-
+    water = set(water)
     x_min = min([clay.x for clay in clays])
     x_max = max([clay.x for clay in clays])
     y_min = min([clay.y for clay in clays])
@@ -157,7 +157,7 @@ def waterfall(current: Tuple[int, int], clay_coords, clays: List[Clay], water=[]
         hit = hit[0], hit[1] - 1
         right = find_right(hit)
         left = find_left(hit)
-    return water, new_sources
+    return list(set(water)), new_sources
 
 
 # settled_water = []
@@ -192,21 +192,33 @@ for line in lines:
     clay.extend(from_line(line))
 
 print(plot_clay(clay, []))
-# settled_water = []
-# clay_coords: Set[Tuple[int, int]] =  {c.coords() for c in clay}
+settled_water = []
+clay_coords: Set[Tuple[int, int]] =  {c.coords() for c in clay}
 
-# water, sources = waterfall((500,0), clay_coords, clay, [])
-# settled_water.extend(water)
+water, sources = waterfall((500,0), clay_coords, clay, [])
+settled_water.extend(list(set(water)))
 
-# sources = deque(sources)
+sources = deque(sources)
 
-# while True:
-#     curr = sources.popleft()
-#     res = waterfall(curr, clay_coords,  clay, settled_water)
-#     if res:
-#         w, s = res
-#         settled_water.extend(w)
-#         sources.extend(s)
-#       #  print(plot_clay(clay, settled_water))
-#     else:
-#         break
+while True:
+    curr = sources.popleft()
+    res = waterfall(curr, clay_coords,  clay, settled_water)
+    if res:
+        w, s = res
+        settled_water.extend(w)
+        sources.extend(s)
+      #  print(plot_clay(clay, settled_water))
+    else:
+        break
+
+
+for _ in range(4):
+    curr = sources.popleft()
+    res = waterfall(curr, clay_coords,  clay, settled_water)
+    if res:
+        w, s = res
+        settled_water.extend(w)
+        sources.extend(s)
+      #  print(plot_clay(clay, settled_water))
+    else:
+        break
