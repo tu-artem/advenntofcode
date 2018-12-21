@@ -98,10 +98,11 @@ def flow(pointer: int, pointer_contains:int, registers: List[int], instrs: List[
     
     registers[pointer] = pointer_contains
     old_reg = registers
+    print(instr)
     registers = operate(registers, instr)
     # print(pointer_contains, registers)
-    registers[pointer] = registers[pointer] + 1
-    pointer_contains = registers[pointer]
+    # registers[pointer] = registers[pointer] + 1
+    pointer_contains = registers[pointer] + 1
 
     return pointer_contains, registers
 
@@ -111,31 +112,30 @@ def flow(pointer: int, pointer_contains:int, registers: List[int], instrs: List[
 
 # print(POINTER_VAL, REGISTERS)
 
-registers = [1, 0, 0, 0, 0, 0] ## For part 1 register 0 started with 0, for part 2 with 1
+# registers = [1, 0, 0, 0, 0, 0] ## For part 1 register 0 started with 0, for part 2 with 1
 
-with open("day19_input.txt") as f:
-    raw = f.read()
+# with open("day19_input.txt") as f:
+#     raw = f.read()
 
-instructions = parse(raw)
+# instructions = parse(raw)
 
-pointer = 2
-pointer_val = 0
+# pointer = 2
+# pointer_val = 0
 
-all_Zero_registers = set()
+# all_Zero_registers = set()
 
-i = 0
-while pointer_val < len(instructions):
-    pointer_val, registers = flow(pointer,pointer_val, registers, instructions)
-    i += 1
-    # if registers[0] == 1482:
-    #     break
-    all_Zero_registers.add(registers[0])
-
-
-print(pointer_val, registers)
+# i = 0
+# while pointer_val < len(instructions):
+#     pointer_val, registers = flow(pointer,pointer_val, registers, instructions)
+#     i += 1
+#     # if registers[0] == 1482:
+#     #     break
+#     all_Zero_registers.add(registers[0])
 
 
-import math
+# print(pointer_val, registers)
+
+
 
 def all_factors(n: int):
     factors = [n]
