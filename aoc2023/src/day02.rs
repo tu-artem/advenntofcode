@@ -5,6 +5,8 @@ fn main() {
     let input = utils::read_input_lines("02");
     let part1_result = part1(&input);
     println!("Part 1: {}", part1_result);
+    let part2_result = part2(&input);
+    println!("Part 2: {}", part2_result);
 }
 
 struct Draw {
@@ -70,6 +72,14 @@ impl Game {
             .iter()
             .all(|x| (x.red <= r) & (x.green <= g) & (x.blue <= b))
     }
+
+    fn power(&self) -> u32 {
+        let min_red_required = self.draws.iter().map(|x| x.red).max().unwrap();
+        let min_green_required = self.draws.iter().map(|x| x.green).max().unwrap();
+        let min_blue_required = self.draws.iter().map(|x| x.blue).max().unwrap();
+
+        min_red_required * min_green_required * min_blue_required
+    }
 }
 
 fn part1(input: &[String]) -> u32 {
@@ -81,6 +91,12 @@ fn part1(input: &[String]) -> u32 {
         .filter(|&x| x.is_valid(r, g, b))
         .map(|x| x.id)
         .sum()
+}
+
+fn part2(input: &[String]) -> u32 {
+    let games: Vec<Game> = input.iter().map(|x| Game::from_line(x)).collect();
+
+    games.iter().map(|x| x.power()).sum()
 }
 
 #[cfg(test)]
@@ -114,6 +130,7 @@ mod tests {
         assert_eq!(game.draws[2].green, 2);
 
         assert!(game.is_valid(12, 13, 14));
+        assert_eq!(game.power(), 48);
     }
 
     #[test]
@@ -125,5 +142,6 @@ mod tests {
         assert_eq!(game.id, 3);
 
         assert!(!game.is_valid(12, 13, 14));
+        assert_eq!(game.power(), 1560);
     }
 }
