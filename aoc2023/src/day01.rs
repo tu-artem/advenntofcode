@@ -84,7 +84,6 @@ mod tests {
         pqr3stu8vwx
         a1b2c3d4e5f
         treb7uchet"
-            .to_string()
             .lines()
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
