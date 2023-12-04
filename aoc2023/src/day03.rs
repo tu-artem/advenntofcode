@@ -3,9 +3,9 @@ pub mod utils;
 fn main() {
     println!("It's day 3!");
     let input = utils::read_input_lines("03");
-    let part1_result = part1(&input);
+    let part1_result = solve_part1(&input);
     println!("Part 1: {}", part1_result);
-    let part2_result = part2(&input);
+    let part2_result = solve_part2(&input);
     println!("Part 2: {}", part2_result);
 }
 
@@ -33,6 +33,7 @@ pub struct Grid {
     pub symbols: Vec<Symbol>,
 }
 
+#[allow(clippy::new_without_default)]
 impl Grid {
     pub fn new() -> Self {
         Grid {
@@ -47,13 +48,13 @@ impl Grid {
     // }
 }
 
-pub fn parse_lines(lines: &Vec<String>) -> Grid {
+pub fn parse_lines(lines: &[String]) -> Grid {
     let mut grid = Grid::new();
-    for (y, line) in lines.into_iter().enumerate() {
+    for (y, line) in lines.iter().enumerate() {
         let mut buff = String::new();
         for (x, c) in line.trim().char_indices() {
             if c == '.' {
-                if buff.len() > 0 {
+                if !buff.is_empty() {
                     let number = Number {
                         x: (x - buff.len()) as isize,
                         y: y as isize,
@@ -74,7 +75,7 @@ pub fn parse_lines(lines: &Vec<String>) -> Grid {
                     value: c,
                 };
                 grid.symbols.push(symbol);
-                if buff.len() > 0 {
+                if !buff.is_empty() {
                     let number = Number {
                         x: (x - buff.len()) as isize,
                         y: y as isize,
@@ -86,7 +87,7 @@ pub fn parse_lines(lines: &Vec<String>) -> Grid {
                 }
             }
         }
-        if buff.len() > 0 {
+        if !buff.is_empty() {
             let number = Number {
                 x: (line.trim().len() - buff.len()) as isize,
                 y: y as isize,
@@ -108,8 +109,8 @@ pub fn is_adjacent(n: &Number, s: &Symbol) -> bool {
     false
 }
 
-pub fn part1(input: &Vec<String>) -> u32 {
-    let grid = parse_lines(&input);
+pub fn solve_part1(input: &[String]) -> u32 {
+    let grid = parse_lines(input);
     let mut sum = 0;
 
     for n in grid.numbers.iter() {
@@ -122,8 +123,8 @@ pub fn part1(input: &Vec<String>) -> u32 {
     sum
 }
 
-pub fn part2(input: &Vec<String>) -> u32 {
-    let grid = parse_lines(&input);
+pub fn solve_part2(input: &[String]) -> u32 {
+    let grid = parse_lines(input);
     let mut sum = 0;
 
     for s in grid.symbols.iter() {
@@ -143,8 +144,9 @@ pub fn part2(input: &Vec<String>) -> u32 {
     sum
 }
 
+#[cfg(test)]
 mod tests {
-    use crate::{is_adjacent, parse_lines, part1, part2, Number, Symbol};
+    use crate::{is_adjacent, solve_part1, solve_part2, Number, Symbol};
 
     #[test]
     fn test_all() {
@@ -162,10 +164,10 @@ mod tests {
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
 
-        let result = part1(&input);
+        let result = solve_part1(&input);
         assert_eq!(result, 4361);
 
-        let result2 = part2(&input);
+        let result2 = solve_part2(&input);
         assert_eq!(result2, 467835);
     }
 

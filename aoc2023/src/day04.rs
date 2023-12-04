@@ -2,7 +2,6 @@ pub mod utils;
 
 use std::collections::HashSet;
 
-
 fn main() {
     println!("It's day 4!");
     let input = utils::read_input_lines("04");
@@ -12,23 +11,29 @@ fn main() {
     println!(" Part 2: {}", part2_result);
 }
 
-pub fn solve_part1(input: &Vec<String>) -> u32 {
-    let cards: Vec<_> = input.iter().map(|x| ScratchCard::parse_line(x.trim())).collect();
+pub fn solve_part1(input: &[String]) -> u32 {
+    let cards: Vec<_> = input
+        .iter()
+        .map(|x| ScratchCard::parse_line(x.trim()))
+        .collect();
 
     cards.iter().map(|x| x.worth()).sum()
 }
 
-pub fn solve_part2(input: &Vec<String>) -> u32 {
-    let cards: Vec<_> = input.iter().map(|x| ScratchCard::parse_line(x.trim())).collect();
+pub fn solve_part2(input: &[String]) -> u32 {
+    let cards: Vec<_> = input
+        .iter()
+        .map(|x| ScratchCard::parse_line(x.trim()))
+        .collect();
     let mut on_hand_cards: Vec<u32> = cards.iter().map(|_| 1).collect();
 
     for card in cards.iter() {
         let on_hand = on_hand_cards[card.id as usize - 1];
         let number_of_won = card.n_matches();
         for won_card_id in (card.id + 1)..=(card.id + number_of_won) {
-            on_hand_cards[won_card_id as usize - 1] += on_hand; 
+            on_hand_cards[won_card_id as usize - 1] += on_hand;
         }
-    };
+    }
 
     on_hand_cards.iter().sum()
 }
@@ -47,12 +52,10 @@ impl ScratchCard {
 
         let winning_numbers: Vec<u32> = w
             .split_ascii_whitespace()
-            .into_iter()
             .map(|x| x.parse().unwrap())
             .collect();
         let card_numbers: Vec<u32> = c
             .split_ascii_whitespace()
-            .into_iter()
             .map(|x| x.parse().unwrap())
             .collect();
 
@@ -68,7 +71,7 @@ impl ScratchCard {
         let hs_winning: HashSet<&u32> = self.winning_numbers.iter().collect();
 
         let intersection: Vec<u32> = hs_card.intersection(&hs_winning).map(|x| **x).collect();
-        
+
         intersection
     }
 
@@ -80,14 +83,13 @@ impl ScratchCard {
         let matches = self.matches();
         match matches.len() {
             0 => 0,
-            l =>   2_u32.pow(l as u32 - 1)
+            l => 2_u32.pow(l as u32 - 1),
         }
-        
     }
 }
 #[cfg(test)]
 mod tests {
-    use crate::{ScratchCard, solve_part1, solve_part2};
+    use crate::{solve_part1, solve_part2, ScratchCard};
 
     #[test]
     fn test_one_line() {
@@ -107,9 +109,9 @@ mod tests {
         Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
         Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
         Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"
-        .lines()
-        .map(|x| x.to_string())
-        .collect::<Vec<String>>();
+            .lines()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>();
 
         assert_eq!(solve_part1(&input), 13);
 

@@ -2,17 +2,17 @@ pub mod utils;
 
 fn main() {
     let input = utils::read_input_lines("01");
-    let part1_result = part1(&input);
+    let part1_result = solve_part1(&input);
     println!("Part 1: {}", part1_result);
-    let part2_result = part2(&input);
+    let part2_result = solve_part2(&input);
     println!("Part 2: {}", part2_result);
 }
 
-fn part1(input: &[String]) -> u32 {
+fn solve_part1(input: &[String]) -> u32 {
     input.iter().map(|x| calibration_value(x.as_str())).sum()
 }
 
-fn part2(input: &[String]) -> u32 {
+fn solve_part2(input: &[String]) -> u32 {
     input
         .iter()
         .map(|x| calibration_value_two(x.as_str()))
@@ -76,7 +76,7 @@ fn calibration_value_two(s: &str) -> u32 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{calibration_value, calibration_value_two, part1};
+    use crate::{calibration_value, calibration_value_two, solve_part1};
 
     #[test]
     fn test_part1() {
@@ -88,7 +88,7 @@ mod tests {
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
 
-        let result = part1(&input);
+        let result = solve_part1(&input);
         assert_eq!(result, 142);
     }
     #[test]

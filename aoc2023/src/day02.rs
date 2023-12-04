@@ -3,9 +3,9 @@ pub mod utils;
 fn main() {
     println!("It's day 02!");
     let input = utils::read_input_lines("02");
-    let part1_result = part1(&input);
+    let part1_result = solve_part1(&input);
     println!("Part 1: {}", part1_result);
-    let part2_result = part2(&input);
+    let part2_result = solve_part2(&input);
     println!("Part 2: {}", part2_result);
 }
 
@@ -82,7 +82,7 @@ impl Game {
     }
 }
 
-fn part1(input: &[String]) -> u32 {
+fn solve_part1(input: &[String]) -> u32 {
     let (r, g, b) = (12, 13, 14);
     let games: Vec<Game> = input.iter().map(|x| Game::from_line(x)).collect();
     // return 42;
@@ -93,7 +93,7 @@ fn part1(input: &[String]) -> u32 {
         .sum()
 }
 
-fn part2(input: &[String]) -> u32 {
+fn solve_part2(input: &[String]) -> u32 {
     let games: Vec<Game> = input.iter().map(|x| Game::from_line(x)).collect();
 
     games.iter().map(|x| x.power()).sum()
@@ -101,7 +101,7 @@ fn part2(input: &[String]) -> u32 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{part1, Game};
+    use crate::{solve_part1, Game};
 
     #[test]
     fn test_part1() {
@@ -114,7 +114,7 @@ mod tests {
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
 
-        assert_eq!(part1(&input), 8);
+        assert_eq!(solve_part1(&input), 8);
     }
     #[test]
     fn test_one_game() {
