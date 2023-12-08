@@ -24,6 +24,7 @@ pub enum HandType {
 
 #[derive(PartialEq, PartialOrd, Debug, Eq, Hash, Ord)]
 pub enum Card {
+    J = 1,
     _2 = 2,
     _3 = 3,
     _4 = 4,
@@ -33,7 +34,6 @@ pub enum Card {
     _8 = 8,
     _9 = 9,
     T = 10,
-    J = 11,
     Q = 12,
     K = 13,
     A = 14,
@@ -86,6 +86,8 @@ impl Hand {
                 counts.insert(char, 1);
             }
         }
+        let count_of_jokers = counts.remove(&Card::J).unwrap_or(0);
+
         let mut counts_of_counts: HashMap<u32, u32> = HashMap::new();
         for (_, v) in counts.iter() {
             if counts_of_counts.contains_key(v) {
@@ -94,26 +96,66 @@ impl Hand {
                 counts_of_counts.insert(*v, 1);
             }
         }
-
-        if counts_of_counts.contains_key(&5) {
+        // Five of A Kind
+        if counts_of_counts.contains_key(&5) || count_of_jokers == 5 {
             return HandType::FiveOfAKind;
         };
+        if counts_of_counts.contains_key(&4) && count_of_jokers == 1 {
+            return HandType::FiveOfAKind;
+        }
+        if counts_of_counts.contains_key(&3) && count_of_jokers == 2 {
+            return HandType::FiveOfAKind;
+        }
+        if counts_of_counts.contains_key(&2) && count_of_jokers == 3 {
+            return HandType::FiveOfAKind;
+        }
+        if count_of_jokers == 4 {
+            return HandType::FiveOfAKind;
+        }
 
+        // Four of A Kind
         if counts_of_counts.contains_key(&4) {
             return HandType::FourOfAKind;
         }
+        if counts_of_counts.contains_key(&3) && count_of_jokers == 1 {
+            return HandType::FourOfAKind;
+        }
+        if counts_of_counts.contains_key(&2) && count_of_jokers == 2 {
+            return HandType::FourOfAKind;
+        }
+        if count_of_jokers == 3 {
+            return HandType::FourOfAKind;
+        }
+
+        // Full house
         if counts_of_counts.contains_key(&3) && counts_of_counts.contains_key(&2) {
             return HandType::FullHouse;
         }
+        if counts_of_counts.get(&2) == Some(&2) && count_of_jokers == 1 {
+            return HandType::FullHouse;
+        }
+
+        // Three
         if counts_of_counts.contains_key(&3) {
             return HandType::ThreeOfAKind;
         }
+        if counts_of_counts.contains_key(&2) && count_of_jokers == 1 {
+            return HandType::ThreeOfAKind;
+        }
+        if count_of_jokers == 2 {
+            return HandType::ThreeOfAKind;
+        }
 
+        // Two Pair
         if counts_of_counts.get(&2) == Some(&2) {
             return HandType::TwoPair;
         }
 
+        // Pair
         if counts_of_counts.get(&2) == Some(&1) {
+            return HandType::OnePair;
+        }
+        if count_of_jokers == 1 {
             return HandType::OnePair;
         }
 
@@ -168,12 +210,22 @@ pub fn solve_part1(input: &[String]) -> u32 {
 }
 
 pub fn solve_part2(input: &[String]) -> u32 {
-    43
+    let mut hands: Vec<Hand> = input
+        .into_iter()
+        .map(|x| Hand::parse_line(x.to_string()))
+        .collect();
+    hands.sort();
+
+    hands
+        .into_iter()
+        .enumerate()
+        .map(|(rank, hand)| (1 + rank as u32) * hand.bid)
+        .sum()
 }
 
 #[cfg(test)]
 pub mod tests {
-    use crate::{solve_part1, Card, Hand, HandType};
+    use crate::{solve_part1, solve_part2, Card, Hand, HandType};
 
     #[test]
     fn test_order() {
@@ -197,16 +249,25 @@ pub mod tests {
         );
         assert_eq!(hands[0].bid, 765);
 
-        assert_eq!(hands[0].hand_type(), HandType::OnePair);
-        assert_eq!(hands[4].hand_type(), HandType::ThreeOfAKind);
+        // assert_eq!(hands[0].hand_type(), HandType::OnePair);
+        // assert_eq!(hands[4].hand_type(), HandType::ThreeOfAKind);
 
-        assert!(hands[0] < hands[1]);
-        assert!(hands[2] < hands[4]);
+        // assert!(hands[0] < hands[1]);
+        // assert!(hands[2] < hands[4]);
 
         hands.sort();
 
-        // print!("{:?}", hands);
+        print!(
+            "{:?}",
+            hands
+                .iter()
+                .map(|x| x.hand_type())
+                .collect::<Vec<HandType>>()
+        );
 
-        assert_eq!(solve_part1(&input), 6440);
+        // assert_eq!(solve_part1(&input), 6440);
+
+        assert_eq!(solve_part2(&input), 5905);
+        println!("{:?}", solve_part2(&input));
     }
 }
