@@ -28,7 +28,21 @@ pub fn solve_part1(input: &[String]) -> i32 {
 }
 
 pub fn solve_part2(input: &[String]) -> i32 {
-    43
+    let mut next_values = Vec::new();
+
+    for line in input.iter() {
+        let mut last_values = Vec::new();
+        let mut history = History::parse_line_reversed(line);
+
+        while !history.all_zero() {
+            last_values.push(history.0[history.0.len() - 1]);
+            history = history.difference()
+        }
+
+        next_values.push(last_values.iter().sum())
+    }
+
+    return next_values.iter().sum();
 }
 
 struct History(Vec<i32>);
@@ -38,6 +52,17 @@ impl History {
         let values: Vec<i32> = line
             .trim()
             .split_ascii_whitespace()
+            .map(|v| v.parse().unwrap_or_else(|_| panic!("Cannot parse {:?}", v)))
+            .collect();
+
+        return History(values);
+    }
+
+    fn parse_line_reversed(line: &str) -> History {
+        let values: Vec<i32> = line
+            .trim()
+            .split_ascii_whitespace()
+            .rev()
             .map(|v| v.parse().unwrap_or_else(|_| panic!("Cannot parse {:?}", v)))
             .collect();
 
@@ -60,7 +85,7 @@ impl History {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::{solve_part1, History};
+    use crate::{solve_part1, solve_part2, History};
 
     #[test]
     pub fn test_part1() {
@@ -78,5 +103,17 @@ pub mod tests {
         assert_eq!(history.difference().0, vec![3, 3, 3, 3, 3]);
         assert_eq!(history.difference().difference().0, vec![0, 0, 0, 0]);
         assert_eq!(solve_part1(&input), 114);
+    }
+
+    pub fn test_part2() {
+        let input = "0 3 6 9 12 15
+        1 3 6 10 15 21
+        10 13 16 21 30 45"
+            .lines()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>();
+
+        let history = History::parse_line_reversed(&input[0]);
+        assert_eq!(solve_part2(&input), 2);
     }
 }
