@@ -22,7 +22,7 @@ pub fn solve_part1(input: &[String]) -> u32 {
     let mut n_steps = 0;
 
     for index in instructions.0.iter().cycle() {
-        let next = &current.elements[*index as usize]; 
+        let next = &current.elements[*index as usize];
         current = network.get(next).unwrap();
         n_steps += 1;
         if current.key == "ZZZ" {
@@ -42,24 +42,26 @@ pub fn solve_part2(input: &[String]) -> Vec<u32> {
         network.insert(node.key.clone(), node);
     }
 
-    let current_nodes: Vec<&Node> = network.iter().filter(|(k, _)| k.ends_with('A')).map(|(_, n)| n ).collect();
-    let mut n_steps:Vec<u32> = current_nodes.iter().map(|_| 0).collect();
+    let current_nodes: Vec<&Node> = network
+        .iter()
+        .filter(|(k, _)| k.ends_with('A'))
+        .map(|(_, n)| n)
+        .collect();
+    let mut n_steps: Vec<u32> = current_nodes.iter().map(|_| 0).collect();
 
     for (start_index, start_node) in current_nodes.into_iter().enumerate() {
         let mut current = start_node;
         // let mut n_steps = 0;
-    
+
         for index in instructions.0.iter().cycle() {
-            let next = &current.elements[*index as usize]; 
+            let next = &current.elements[*index as usize];
             current = network.get(next).unwrap();
             n_steps[start_index] += 1;
             if current.key.ends_with("Z") {
                 break;
             }
         }
-    } 
-
-
+    }
 
     return n_steps;
 }
@@ -73,15 +75,29 @@ pub fn solve_part2_brute_force(input: &[String]) -> u32 {
         network.insert(node.key.clone(), node);
     }
 
-    let mut current_nodes: Vec<&Node> = network.iter().filter(|(k, _)| k.ends_with('A')).map(|(_, n)| n ).collect();
+    let mut current_nodes: Vec<&Node> = network
+        .iter()
+        .filter(|(k, _)| k.ends_with('A'))
+        .map(|(_, n)| n)
+        .collect();
     let mut n_steps = 0;
 
     for index in instructions.0.iter().cycle() {
-        let next_elements: Vec<&String> = current_nodes.iter().map(|&n| &n.elements[*index as usize]).collect(); 
-        current_nodes = next_elements.iter().map(|&k| network.get(k).unwrap()).collect();
+        let next_elements: Vec<&String> = current_nodes
+            .iter()
+            .map(|&n| &n.elements[*index as usize])
+            .collect();
+        current_nodes = next_elements
+            .iter()
+            .map(|&k| network.get(k).unwrap())
+            .collect();
         n_steps += 1;
-        
-        if current_nodes.iter().map(|n| n.key.ends_with("Z")).all(|x| x) {
+
+        if current_nodes
+            .iter()
+            .map(|n| n.key.ends_with("Z"))
+            .all(|x| x)
+        {
             break;
         }
     }
@@ -130,7 +146,7 @@ impl Node {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::{Instructions, Node, solve_part1, solve_part2_brute_force, solve_part2};
+    use crate::{solve_part1, solve_part2, solve_part2_brute_force, Instructions, Node};
 
     #[test]
     fn test_part1() {
@@ -155,7 +171,6 @@ pub mod tests {
         assert_eq!(node.elements[0], "BBB");
         assert_eq!(node.elements[1], "CCC");
         assert_eq!(solve_part1(&input), 2);
-        
     }
     #[test]
     fn test_part2() {
@@ -173,10 +188,7 @@ pub mod tests {
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
 
-
         assert_eq!(solve_part2_brute_force(&input), 6);
         assert_eq!(solve_part2(&input), vec![3, 2]);
-
-        
     }
 }

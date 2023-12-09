@@ -18,5 +18,13 @@ pub fn solve_part2(input: &[String]) -> u32 {
 
 #[cfg(test)]
 pub mod tests {
-    
+    #[test]
+    pub fn test_part1() {
+        let input = "0 3 6 9 12 15
+        1 3 6 10 15 21
+        10 13 16 21 30 45"
+            .lines()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>();
+    }
 }
