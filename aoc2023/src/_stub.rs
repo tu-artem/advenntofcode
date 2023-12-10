@@ -1,7 +1,8 @@
 pub mod utils;
 
 fn main() {
-    let input = utils::read_input_lines("05");
+    println!("It's a stub!");
+    let input = utils::read_input_lines("00");
     let part1_result = solve_part1(&input);
     println!("Part 1: {}", part1_result);
     let part2_result = solve_part2(&input);
