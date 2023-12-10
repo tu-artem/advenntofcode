@@ -14,29 +14,68 @@ fn main() {
 pub fn solve_part1(input: &[String]) -> u32 {
     let grid = Grid::from_input(input);
 
-    let mut position1 = grid.start_position.clone();
-    let mut position2 = grid.start_position.clone();
+    let mut position = grid.start_position.clone();
 
-    // TODO: write this in code))
-    position1.dx = -1;
-    position2.dy = 1;
+    // find start direction
+    for (dx, dy) in [(1, 0), (-1, 0), (0, 1), (0, -1)] {
+        let pipe = &grid.values[(grid.start_position.y + dy) as usize]
+            [(grid.start_position.x + dx) as usize];
 
-    let mut n_steps = 0;
-    loop {
-        position1.move_();
-        let next_pipe_1 = &grid.values[position1.y as usize][position1.x as usize];
-        position1.update_directions(next_pipe_1.value);
-
-        position2.move_();
-        let next_pipe_2 = &grid.values[position2.y as usize][position2.x as usize];
-        position2.update_directions(next_pipe_2.value);
-        n_steps += 1;
-        if position1.x == position2.x && position1.y == position2.y {
+        if pipe.value == '-' && dx.abs() == 1 {
+            position.dx = dx;
+            break;
+        }
+        if pipe.value == '|' && dy.abs() == 1 {
+            position.dy = dy;
+            break;
+        }
+        if pipe.value == 'L' && dy == -1 {
+            position.dy = dy;
+            break;
+        }
+        if pipe.value == 'L' && dx == -1 {
+            position.dx = dx;
+            break;
+        }
+        if pipe.value == 'J' && dy == -1 {
+            position.dy = dy;
+            break;
+        }
+        if pipe.value == 'J' && dx == 1 {
+            position.dx = dx;
+            break;
+        }
+        if pipe.value == 'F' && dy == 1 {
+            position.dy = dy;
+            break;
+        }
+        if pipe.value == 'F' && dx == -1 {
+            position.dx = dx;
+            break;
+        }
+        if pipe.value == '7' && dy == 1 {
+            position.dy = dy;
+            break;
+        }
+        if pipe.value == '7' && dx == 1 {
+            position.dx = dx;
             break;
         }
     }
 
-    n_steps
+    let mut n_steps = 0;
+    loop {
+        position.move_();
+        let next_pipe_1 = &grid.values[position.y as usize][position.x as usize];
+        position.update_directions(next_pipe_1.value);
+        n_steps += 1;
+        if position.x == grid.start_position.x && position.y == grid.start_position.y {
+            // we are at the beginning
+            break;
+        }
+    }
+    // divide by 2 since we need a half way
+    n_steps / 2
 }
 
 pub fn solve_part2(input: &[String]) -> u32 {
@@ -95,6 +134,10 @@ impl Position {
                 self.dy += 1
             }
             '-' | '|' => {}
+            'S' => {
+                self.dx = 0;
+                self.dy = 0
+            }
             '.' => panic!("We are outside the pipe, something is wrong!"),
             x => panic!("Uknown ttype {}", x),
         }
@@ -144,21 +187,22 @@ pub mod tests {
         assert_eq!(grid.start_position.x, 1);
         assert_eq!(grid.start_position.y, 3);
 
-        let mut position1 = grid.start_position.clone();
-        let mut position2 = grid.start_position.clone();
+        let mut position = grid.start_position.clone();
 
-        position1.dx = 1;
-        position1.move_();
-        assert_eq!(position1.x, 2);
-        let next_pipe = &grid.values[position1.y as usize][position1.x as usize];
+        position.dx = 1;
+        position.move_();
+        assert_eq!(position.x, 2);
+        let next_pipe = &grid.values[position.y as usize][position.x as usize];
         assert_eq!(next_pipe.value, '-');
-        position1.update_directions(next_pipe.value);
-        position1.move_();
-        let next_pipe = &grid.values[position1.y as usize][position1.x as usize];
+        position.update_directions(next_pipe.value);
+        position.move_();
+        let next_pipe = &grid.values[position.y as usize][position.x as usize];
         assert_eq!(next_pipe.value, '7');
-        position1.update_directions(next_pipe.value);
-        position1.move_();
-        assert_eq!(position1.x, 3);
-        assert_eq!(position1.y, 2);
+        position.update_directions(next_pipe.value);
+        position.move_();
+        assert_eq!(position.x, 3);
+        assert_eq!(position.y, 2);
+
+        assert_eq!(solve_part1(&input), 4);
     }
 }
